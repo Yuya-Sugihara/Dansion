@@ -5,7 +5,7 @@
 const int width=10;
 const int height=7;
 const int enemynum=4;
-const char stageData[width*height]=
+char stageData[width*height]=
 {
   '#','#','#','#','#','#','#','#','#','#',
   '#','E',' ',' ',' ',' ',' ',' ',' ','#',

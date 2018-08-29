@@ -11,13 +11,16 @@ private:
   int power,hp;
 
 public:
+  
   Player(int power,int hp): power(power),hp(hp)
-  {};
+  {
+  };
 
   void move(int x,int y);
   int x() const {return this->px;}
   int y() const {return this->py;}
   void update(Object* object,char command);
+  int attack();
 
 };
 

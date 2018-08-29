@@ -1,5 +1,9 @@
 #include "Player.h"
 
+int Player::attack()
+{
+  return power;
+}
 void Player::move(int x,int y)
 {
   px=x;
@@ -14,11 +18,10 @@ void Player::update(Object* object,char command)
     case 'a': dx-=1; break;
     case 'd': dx+=1; break;
     case 's': dy+=1; break;
-    //case 'e': return;
     default: return ;
   }
   cout <<"InPlayer.update before:px,py: " <<px <<py <<endl;
-  object[this->py*width+px]=NONE;
+  object[py*width+px]=NONE;
   switch (object[(py+dy)*width+(px+dx)] ) {
     case NONE:
       move(px+dx,py+dy);

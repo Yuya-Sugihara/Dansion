@@ -1,6 +1,8 @@
 #include <iostream>
+#include <cstdlib>
 #include "status.h"
 #include "Player.h"
+#include "Enemy.h"
 
 
 using namespace std;
@@ -8,8 +10,9 @@ using namespace std;
 
 void draw(Object* object);
 //ステージの初期化、プレイヤーの位置を算出する。
-void init(Object* object,Player* player)
+void init(Object* object,Player* player,Enemy* enemy)
 {
+  int count=0;
   for(int i=0;i<height;i++)
   {
     for(int j=0;j<width;j++)
@@ -20,7 +23,12 @@ void init(Object* object,Player* player)
           object[i*width+j] = PLAYER;
           player->move(j,i);
           break;
-        case 'E': object[i*width+j] = ENEMY; break;
+        case 'E':
+          object[i*width+j] = ENEMY;
+          if(count>enemynum) cout <<"Init: count is wrong." <<endl;
+          enemy[count].move(j,i);
+          count++;
+          break;
         default: object[i*width+j] = NONE; break;
       }
     }
@@ -31,7 +39,7 @@ void init(Object* object,Player* player)
 void input(char* command)
 {
   cout << "Please input the command" <<endl;
-  cout << "'w': up. 'a': left. 'd':right. 's':down. 'e':exit ";
+  cout << "'w': up. 'a': left. 'd':right. 's':down. 'g':attack. 'e':exit ";
   cin >>*command;
   if(*command=='e') exit(1);
   cout <<endl;
@@ -39,6 +47,25 @@ void input(char* command)
   //if(!command[1]=='¥0') cout << "wrong command";
 }
 
+void battle(char command,Player* player,Enemy* enemy,Object* object,
+            int& remaining)
+{
+  if(command=='g')
+  {
+    if(enemy->isDead()) {
+      return;
+    }
+    if( ( abs( enemy->x() - player->x() ) ) <=1 &&
+      ( ( abs( enemy->y() - player->y() )<=1) ) )
+    {
+      enemy->damage(player->attack());
+      if(enemy->isDead()) {
+        object[enemy->y()*width+enemy->x()]=NONE;
+        remaining--;
+      }
+    }
+  }
+}
 
 
 void draw(Object* object)
@@ -61,25 +88,56 @@ void draw(Object* object)
 
   }
 }
+void gameClear()
+{
+  cout << "Conguratularion!!" <<endl;
+}
 
 int main()
 {
-  Player* player =new Player(10,100);
-  char command;
-  const char* stage=new char[width*height];
-  stage=stageData;
-  Object* object=new Object[width*height]; //変更して描画する。
-  for(int i=0;i<width*height;i++) object[i]=WALL;
 
-  init(object,player);
-  cout <<"px: " <<player->x() <<" py: " <<player->y() <<endl;
+  Player* player =new Player(10,100);
+  Enemy* enemy=new Enemy[enemynum];
+  int remaining=enemynum;
+  char command;
+  char* stage=new char;
+  //stage=stageData;
+  //cout <<stage<<endl;
+  Object* object=new Object[width*height]; //変更して描画する。
+
+  for(int i=0;i<enemynum;i++)
+  {
+    enemy[i].setup(10,10);
+  }
+
+
+  init(object,player,enemy);
+
+
   while(1)
   {
     input(&command);
+    if(command=='q') break;
     player->update(object,command);
+    for(int i=0;i<enemynum;i++)
+    {
+      battle(command,player,&enemy[i],object,remaining);
+
+      enemy[i].update(object,player);
+    }
     draw(object);
     cout <<"px: " <<player->x() <<" py: " <<player->y() <<endl;
+    if(remaining==0) {
+      gameClear();
+      break;
+    }
   }
+
+  delete player;
+  //for(int i=0;i<enemynum;i++) delete enemy[i];
+  delete[] enemy;
+  //delete stage;
+  delete[] object;
 
   return 0;
 }
